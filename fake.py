@@ -21,8 +21,19 @@ def randtld():
 class return_fake:
     def on_post(self, req, resp):
         dict = []
+        
+        body = req.stream.read()
+        params = json.loads(body)
+        
+        try:
+            params["offset"]
+        except:
+            pass
+        else:    
+            resp.text = "no"
+            return
 
-        for i in range (1,500):
+        for i in range (1,random.randint(70, 100)):
             dict.append({"isSuspended": True, "isBlocked": True, "host": randstr(random.randint(5, 50)) + randtld()})
 
         resp.text = json.dumps(dict, ensure_ascii=False)
