@@ -4,6 +4,8 @@ WORKDIR /app
 COPY . .
 RUN addgroup app && \
     adduser -D -h /app -s /bin/sh -G app app && \
-    pip3 install --no-cache -r requirements.txt
+    pip3 install --no-cache -r requirements.txt && \
+    apk add tini --no-cache
 
-CMD ["su", "app", "-c", "gunicorn -b 0.0.0.0:8080 fake:app"]
+ENV PYTHONUNBUFFERED=TRUE
+CMD ["/sbin/tini", "--", "su", "app", "-c", "python3 -u fake.py"]

@@ -1,7 +1,11 @@
+import os
+import sys
 import json
 import random
 
 import falcon
+import falcon.asgi
+import uvicorn
 
 
 def randstr(length):
@@ -19,24 +23,31 @@ def randtld():
         return ".one"
 
 class return_fake:
-    def on_post(self, req, resp):
+    async def on_post(self, req, resp):
         dict = []
-        
-        body = req.stream.read()
+
+        body = await req.stream.read()
         params = json.loads(body)
-        
+
         try:
             params["offset"]
+
         except:
-            pass
+            for i in range (1,random.randint(990, 1300)):
+                dict.append({"isSuspended": True, "isBlocked": True, "host": randstr(random.randint(5, 50)) + randtld()})
+
+            sys.stdout.write("Faked!!\n")
+            resp.text = json.dumps(dict, ensure_ascii=False)
+
         else:    
-            resp.text = "no"
-            return
+            resp.text = "FCKPUTIN"
 
-        for i in range (1,random.randint(70, 100)):
-            dict.append({"isSuspended": True, "isBlocked": True, "host": randstr(random.randint(5, 50)) + randtld()})
 
-        resp.text = json.dumps(dict, ensure_ascii=False)
+        
 
-app = falcon.App()
+
+app = falcon.asgi.App()
 app.add_route('/api/federation/instances', return_fake())
+
+if __name__ == "__main__":
+    uvicorn.run("fake:app", host="0.0.0.0", port=8080, workers=4, log_level="info", limit_concurrency=2, timeout_keep_alive=3)
